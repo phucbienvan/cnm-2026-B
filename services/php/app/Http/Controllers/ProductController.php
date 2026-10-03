@@ -43,6 +43,20 @@ class ProductController extends Controller
         ]);
     }
 
+    public function update(Request $request, Product $product)
+    {
+        $product->update([
+            'name' => $request->name,
+            'price' => $request->price,
+            'description' => $request->description
+        ]);
+
+        return response()->json([
+            'message' => 'update product successfully',
+            'data' => new ProductResource($product)
+        ]);
+    }
+
     public function destroy(Product $product)
     {
         $product->delete();
