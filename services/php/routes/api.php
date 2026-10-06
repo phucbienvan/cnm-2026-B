@@ -1,18 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
+namespace App\Http\Requests\Product;
 
-Route::get('/products' , [ProductController::class , 'index']);
-Route::post('/products' , [ProductController::class , 'store']);
+use Illuminate\Foundation\Http\FormRequest;
 
-Route::get('/products/{product}' , [ProductController::class , 'show'])->missing(function () {
-    return response()->json([
-        'message' => 'product not found'
-    ], 404);
-});
-Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->missing(function () {
-    return response()->json([
-        'message' => 'product not found'
-    ], 404);
-});
+class UpdateRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'description' => 'required|string',
+        ];
+    }
+}
