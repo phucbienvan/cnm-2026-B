@@ -17,6 +17,14 @@ class ProductController extends Controller
             'message' => 'get list product successfully',
             'data' => ProductResource::collection($products)
         ]);
+
+        // $products = Product::all();
+        // // dd($products);
+
+        // return response()->json([
+        //     'message' => 'get list product successfully',
+        //     'data' => $products
+        // ]);
     }
 
     public function store(CreateRequest $request)
@@ -49,6 +57,22 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'delete product successfully'
+        ]);
+    }
+
+    public function update(Product $product, CreateRequest $request)
+    {
+        $input = $request->validated();
+
+        $product->update([
+            'name' => $input['name'],
+            'price' => $input['price'],
+            'description' => $input['description']
+        ]);
+
+        return response()->json([
+            'message' => 'Change product successfull',
+            'data' => new ProductResource($product)
         ]);
     }
 }
