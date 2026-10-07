@@ -11,6 +11,14 @@ Route::get('/products/{product}' , [ProductController::class , 'show'])->missing
         'message' => 'product not found'
     ], 404);
 });
+
+// Thêm route update vào đây
+Route::put('/products/{product}' , [ProductController::class , 'update'])->missing(function () {
+    return response()->json([
+        'message' => 'product not found'
+    ], 404);
+});
+
 Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->missing(function () {
     return response()->json([
         'message' => 'product not found'
