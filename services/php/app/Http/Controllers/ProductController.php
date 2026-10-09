@@ -6,7 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\Product\CreateRequest;
 use App\Http\Resources\ProductResource;
-
+use App\Http\Requests\Product\UpdateRequest;
 class ProductController extends Controller
 {
     public function index()
@@ -43,6 +43,21 @@ class ProductController extends Controller
         ]);
     }
 
+    public function update(UpdateRequest $request, Product $product)
+    {
+        $input = $request->validated();
+
+        $product->update([
+            'name' => $input['name'] ?? $product->name,
+            'price' => $input['price'] ?? $product->price,
+            'description' => $input['description'] ?? $product->description,
+        ]);
+
+        return response()->json([
+            'message' => 'update product successfully',
+            'data' => new ProductResource($product)
+        ]);
+    }
     public function destroy(Product $product)
     {
         $product->delete();
