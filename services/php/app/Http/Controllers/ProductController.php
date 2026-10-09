@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Http\Requests\Product\CreateRequest;
+use App\Http\Requests\Product\UpdateRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Product;
 
 class ProductController extends Controller
 {
@@ -15,7 +15,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'get list product successfully',
-            'data' => ProductResource::collection($products)
+            'data' => ProductResource::collection($products),
         ]);
     }
 
@@ -26,12 +26,12 @@ class ProductController extends Controller
         $product = Product::create([
             'name' => $input['name'],
             'price' => $input['price'],
-            'description' => $input['description']
+            'description' => $input['description'],
         ]);
 
         return response()->json([
             'message' => 'create product successfully',
-            'data' => new ProductResource($product)
+            'data' => new ProductResource($product),
         ]);
     }
 
@@ -39,7 +39,17 @@ class ProductController extends Controller
     {
         return response()->json([
             'message' => 'get product successfully',
-            'data' => new ProductResource($product)
+            'data' => new ProductResource($product),
+        ]);
+    }
+
+    public function update(UpdateRequest $request, Product $product)
+    {
+        $product->update($request->validated());
+
+        return response()->json([
+            'message' => 'update product successfully',
+            'data' => new ProductResource($product),
         ]);
     }
 
@@ -48,7 +58,7 @@ class ProductController extends Controller
         $product->delete();
 
         return response()->json([
-            'message' => 'delete product successfully'
+            'message' => 'delete product successfully',
         ]);
     }
 }
