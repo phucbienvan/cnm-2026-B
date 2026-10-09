@@ -16,3 +16,4 @@ Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->m
         'message' => 'product not found'
     ], 404);
 });
+Route::put('/products/{product}', [ProductController::class, 'update']);
