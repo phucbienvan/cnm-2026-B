@@ -1,0 +1,139 @@
+{
+  "clientName": "Thunder Client",
+  "collectionName": "CNM Products API",
+  "collectionId": "cnm-products-api",
+  "dateExported": "2026-10-09T03:25:00.000Z",
+  "version": "1.2",
+  "folders": [],
+  "requests": [
+    {
+      "_id": "req-get-products",
+      "colId": "cnm-products-api",
+      "containerId": "",
+      "name": "1. Get All Products",
+      "url": "http://localhost:8000/api/products",
+      "method": "GET",
+      "sortNum": 10000,
+      "created": "2026-10-09T03:25:00.000Z",
+      "modified": "2026-10-09T03:25:00.000Z",
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req-create-product",
+      "colId": "cnm-products-api",
+      "containerId": "",
+      "name": "2. Create Product",
+      "url": "http://localhost:8000/api/products",
+      "method": "POST",
+      "sortNum": 20000,
+      "created": "2026-10-09T03:25:00.000Z",
+      "modified": "2026-10-09T03:25:00.000Z",
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Bàn phím cơ DareU EK87\",\n  \"price\": 650000,\n  \"description\": \"Bàn phím cơ switch quang học\"\n}",
+        "form": []
+      }
+    },
+    {
+      "_id": "req-show-product",
+      "colId": "cnm-products-api",
+      "containerId": "",
+      "name": "3. Get Product Detail",
+      "url": "http://localhost:8000/api/products/4",
+      "method": "GET",
+      "sortNum": 30000,
+      "created": "2026-10-09T03:25:00.000Z",
+      "modified": "2026-10-09T03:25:00.000Z",
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req-update-put-product",
+      "colId": "cnm-products-api",
+      "containerId": "",
+      "name": "4. Update Product (PUT - Full)",
+      "url": "http://localhost:8000/api/products/4",
+      "method": "PUT",
+      "sortNum": 40000,
+      "created": "2026-10-09T03:25:00.000Z",
+      "modified": "2026-10-09T03:25:00.000Z",
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Bàn phím cơ Akko 3087\",\n  \"price\": 1250000,\n  \"description\": \"Bàn phím Akko switch CS Jelly Pink\"\n}",
+        "form": []
+      }
+    },
+    {
+      "_id": "req-update-patch-product",
+      "colId": "cnm-products-api",
+      "containerId": "",
+      "name": "5. Update Product (PATCH - Partial)",
+      "url": "http://localhost:8000/api/products/4",
+      "method": "PATCH",
+      "sortNum": 50000,
+      "created": "2026-10-09T03:25:00.000Z",
+      "modified": "2026-10-09T03:25:00.000Z",
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"price\": 990000\n}",
+        "form": []
+      }
+    },
+    {
+      "_id": "req-delete-product",
+      "colId": "cnm-products-api",
+      "containerId": "",
+      "name": "6. Delete Product",
+      "url": "http://localhost:8000/api/products/4",
+      "method": "DELETE",
+      "sortNum": 60000,
+      "created": "2026-10-09T03:25:00.000Z",
+      "modified": "2026-10-09T03:25:00.000Z",
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ]
+    }
+  ]
+}
