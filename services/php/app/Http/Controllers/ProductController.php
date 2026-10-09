@@ -51,4 +51,34 @@ class ProductController extends Controller
             'message' => 'delete product successfully'
         ]);
     }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $product = \App\Models\Product::find($id);
+
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy sản phẩm.'
+                ], 404);
+            }
+
+            $product->update($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật sản phẩm thành công.',
+                'data' => new \App\Http\Resources\ProductResource($product) 
+               
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi trong quá trình cập nhật.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
