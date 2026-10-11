@@ -8,6 +8,13 @@ Route::post('register' , [AuthController::class , 'register']);
 Route::post('login' , [AuthController::class , 'login']);
 Route::post('logout' , [AuthController::class , 'logout'])->middleware('auth:sanctum');
 Route::get('users' , [AuthController::class , 'getUser'])->middleware('auth:sanctum');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
+
+// Các route yêu cầu đăng nhập (Sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
 
 Route::get('/products' , [ProductController::class , 'index']);
 Route::post('/products' , [ProductController::class , 'store']);
