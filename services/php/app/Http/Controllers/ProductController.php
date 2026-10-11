@@ -6,6 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\Product\CreateRequest;
 use App\Http\Resources\ProductResource;
+use App\Http\Requests\Product\UpdateRequest;
 
 class ProductController extends Controller
 {
@@ -42,6 +43,17 @@ class ProductController extends Controller
             'data' => new ProductResource($product)
         ]);
     }
+
+    public function update(UpdateRequest $request, Product $product)
+{
+    $input = $request->validated();
+    $product->update($input);
+
+    return response()->json([
+        'message' => 'update product successfully',
+        'data'    => new ProductResource($product)
+    ]);
+}
 
     public function destroy(Product $product)
     {
