@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AuthController;
+
+Route::post('register' , [AuthController::class , 'register']);
+Route::post('login' , [AuthController::class , 'login']);
+Route::get('users' , [AuthController::class , 'getUser'])->middleware('auth:sanctum');
 
 Route::get('/products' , [ProductController::class , 'index']);
 Route::post('/products' , [ProductController::class , 'store']);
@@ -21,3 +26,4 @@ Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->m
         'message' => 'product not found'
     ], 404);
 });
+Route::put('/products/{product}', [ProductController::class, 'update']);
