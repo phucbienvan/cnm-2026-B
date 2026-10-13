@@ -125,8 +125,17 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'message' => __($status) // Trả về thông báo lỗi cụ thể (ví dụ token không đúng/hết hạn)
+            'message' => __($status) 
         ], 400);
+    }
+
+        public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Đăng xuất thành công.'
+        ], 200);
     }
 
     public function getUser()

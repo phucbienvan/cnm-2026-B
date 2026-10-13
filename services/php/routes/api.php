@@ -12,6 +12,7 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
 Route::post('login' , [AuthController::class , 'login']);
 Route::post('forgot-password' , [AuthController::class , 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::get('users' , [AuthController::class , 'getUser'])->middleware('auth:sanctum');
 
