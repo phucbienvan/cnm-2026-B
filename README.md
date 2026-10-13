@@ -44,6 +44,33 @@ xung đột với stack `cn-do` đang chạy; FastAPI vẫn dùng `8001`.
 `.env` ở gốc chứa cấu hình Docker Compose (cổng, thông tin MySQL, UID/GID).
 `services/php/.env` chứa cấu hình Laravel. Compose truyền thông tin đăng nhập MySQL
 từ `.env` ở gốc vào container PHP.
+
+## Kiểm tra email với Mailtrap
+
+Trong Mailtrap, tạo một Email Testing inbox và lấy SMTP credentials của inbox đó.
+Điền host, port, username và password vào `services/php/.env` (`MAIL_HOST`,
+`MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`); không commit credentials.
+Đặt `FRONTEND_URL` thành địa chỉ frontend có trang `/reset-password` để link trong
+email Forgot Password mở đúng form. Sau khi sửa env, chạy:
+
+```sh
+docker compose exec php php artisan config:clear
+```
+
+Gọi `POST /api/register` hoặc `POST /api/forgot-password`, rồi mở inbox Mailtrap
+để xem email xác minh hoặc email đặt lại mật khẩu.
+
+API xác minh email:
+
+- `POST /api/verify-email`: `{ "email": "user@example.com", "code": "123456" }`
+- `POST /api/resend-verification-code`: `{ "email": "user@example.com" }`
+- `POST /api/forgot-password`: `{ "email": "user@example.com" }`
+- `POST /api/reset-password`: `{ "email": "user@example.com", "token": "...", "password": "new-password", "password_confirmation": "new-password" }`
+
+Link trong email đặt lại mật khẩu mở `FRONTEND_URL/reset-password`; frontend lấy
+`token` và `email` từ query string rồi gửi chúng cùng mật khẩu mới đến API reset.
+Mã xác minh hết hạn sau 10 phút; reset token Laravel hết hạn sau 60 phút.
+
 Compose dùng tên project `cnm-2026-a` để giữ nguyên stack và dữ liệu khi chuyển thư mục.
 MySQL và Redis giữ nguyên các volume `sail-mysql`, `sail-redis`.
 
