@@ -59,4 +59,13 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
+
+    public function logout()
+    {
+        request()->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Dang xuat thanh cong'
+        ]);
+    }
 }
