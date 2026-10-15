@@ -22,3 +22,7 @@ Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->m
     ], 404);
 });
 Route::put('/products/{product}', [ProductController::class, 'update']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
