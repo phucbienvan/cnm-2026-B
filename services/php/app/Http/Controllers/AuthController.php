@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
         $input = $request->validated();
         $user = User::create([
@@ -21,10 +24,10 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'register successfully',
             'data' => $user
-        ]);
+        ], 201);
     }
 
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResponse
     {
         $input = $request->validated();
         $user = User::where('email' , $input['email'])->first();
@@ -51,12 +54,26 @@ class AuthController extends Controller
         ]);
     }
 
-    public function getUser()
+    public function getUser(Request $request): JsonResponse
     {
-        $user = auth('sanctum')->user();
+        $user = $request->user();
+
         return response()->json([
             'message' => 'get user successfully',
             'data' => $user
+        ]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $accessToken = $request->user()->currentAccessToken();
+
+        if ($accessToken instanceof PersonalAccessToken) {
+            $accessToken->delete();
+        }
+
+        return response()->json([
+            'message' => 'logout successfully',
         ]);
     }
 }
