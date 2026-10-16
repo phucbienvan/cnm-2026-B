@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,29 +15,29 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'password' => $input['password']
+            'password' => $input['password'],
         ]);
 
         return response()->json([
             'message' => 'register successfully',
-            'data' => $user
+            'data' => $user,
         ]);
     }
 
     public function login(LoginRequest $request)
     {
         $input = $request->validated();
-        $user = User::where('email' , $input['email'])->first();
+        $user = User::where('email', $input['email'])->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
-                'message' => 'email or password not match'
+                'message' => 'email or password not match',
             ], 401);
         }
 
-        if (!Hash::check($input['password'], $user->password)) {
+        if (! Hash::check($input['password'], $user->password)) {
             return response()->json([
-                'message' => 'email or password not match'
+                'message' => 'email or password not match',
             ], 401);
         }
 
@@ -46,17 +46,27 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'login successfully',
             'data' => [
-                'access_token' => $accessToken
-            ]
+                'access_token' => $accessToken,
+            ],
+        ]);
+    }
+
+    public function logout()
+    {
+        auth('sanctum')->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'logout successfully',
         ]);
     }
 
     public function getUser()
     {
         $user = auth('sanctum')->user();
+
         return response()->json([
             'message' => 'get user successfully',
-            'data' => $user
+            'data' => $user,
         ]);
     }
 }
