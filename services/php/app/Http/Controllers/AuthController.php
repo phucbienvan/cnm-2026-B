@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -51,6 +52,7 @@ class AuthController extends Controller
         ]);
     }
 
+    
     public function getUser()
     {
         $user = auth('sanctum')->user();
@@ -60,12 +62,12 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        request()->user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Dang xuat thanh cong'
+            'message' => 'logout successfully'
         ]);
     }
 }
