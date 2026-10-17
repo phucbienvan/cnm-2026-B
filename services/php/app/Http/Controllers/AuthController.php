@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\ResendCodeMailRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Mail\SendMailRegister;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -68,6 +71,52 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'email verified successfully',
             'data' => $user
+        ]);
+    }
+
+    public function resendCodeMail(ResendCodeMailRequest $request): JsonResponse
+    {
+        $email = mb_strtolower(trim($request->validated()['email']));
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+        $successMessage = 'If the account exists and its email is not verified, a new code has been sent.';
+
+        if (! $user || $user->email_verified_at) {
+            return response()->json([
+                'message' => $successMessage,
+            ]);
+        }
+
+        $emailKey = hash('sha256', $email);
+        $cooldownKey = "resend-code-mail:cooldown:{$emailKey}";
+        $hourlyLimitKey = "resend-code-mail:hourly:{$emailKey}";
+
+        if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
+            return response()->json([
+                'message' => 'Please wait before requesting another verification code.',
+                'retry_after' => RateLimiter::availableIn($cooldownKey),
+            ], 429);
+        }
+
+        if (RateLimiter::tooManyAttempts($hourlyLimitKey, 5)) {
+            return response()->json([
+                'message' => 'The verification code resend limit has been reached. Please try again later.',
+                'retry_after' => RateLimiter::availableIn($hourlyLimitKey),
+            ], 429);
+        }
+
+        $code = (string) random_int(100000, 999999);
+        $user->update([
+            'code' => Hash::make($code),
+            'expired_code' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($user->email)->queue(new SendMailRegister($code, $user->name));
+
+        RateLimiter::hit($cooldownKey, 60);
+        RateLimiter::hit($hourlyLimitKey, 60 * 60);
+
+        return response()->json([
+            'message' => $successMessage,
         ]);
     }
     
