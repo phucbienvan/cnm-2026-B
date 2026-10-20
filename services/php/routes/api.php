@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 
 Route::post('register' , [AuthController::class , 'register']);
+Route::post('resend-code', [AuthController::class, 'resendCodeMail']);
 Route::post('verify-code' , [AuthController::class , 'verifyCode']);
 Route::post('login' , [AuthController::class , 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
