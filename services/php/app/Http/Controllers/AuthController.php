@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
+use App\Http\Requests\Auth\ResendCodeRequest;
 use App\Mail\SendMailRegister;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-
 class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
@@ -121,4 +121,31 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
+
+    public function resendCode(ResendCodeRequest $request)
+    {
+        $input = $request->validated();
+        $user = User::where('email', $input['email'])->first();
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'message' => 'email already verified'
+            ], 400);
+        }
+
+        $code = random_int(100000 , 999999);
+        $expiredCode = now()->addMinutes(10);
+        $user->update([
+            'code' => Hash::make($code),
+            'expired_code' => $expiredCode
+        ]);
+
+        //Send mail
+        Mail::to($user->email)->queue(new SendMailRegister($code,  $user->name));
+
+        return response()->json([
+            'message' => 'resend code successfully',
+            'data' => $user
+        ]);
+    }   
 }
