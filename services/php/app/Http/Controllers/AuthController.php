@@ -121,4 +121,34 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
+    // bai tap resendcodemail 
+    public function resendCodeMail(Request $request)
+    {
+        $input = $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $input['email'])->first();
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'message' => 'email already verified'
+            ], 400);
+        }
+
+        $code = random_int(100000, 999999);
+        $expiredCode = now()->addMinutes(10);
+
+        $user->update([
+            'code' => Hash::make($code),
+            'expired_code' => $expiredCode
+        ]);
+
+        // Gửi mail bằng hàng đợi (queue) giống như lúc đăng ký
+        Mail::to($user->email)->queue(new SendMailRegister($code, $user->name));
+
+        return response()->json([
+            'message' => 'resend code successfully'
+        ]);
+    }
 }
