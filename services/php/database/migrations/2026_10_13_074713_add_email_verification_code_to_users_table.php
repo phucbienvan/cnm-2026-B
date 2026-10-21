@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('code')->nullable();
-            $table->timestamp('expired_code')->nullable();
+            $table->string('code_verify_email')->nullable();
+            $table->timestamp('expired_verify_email')->nullable();
         });
     }
 
@@ -23,8 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('code');
-            $table->dropColumn('expired_code');
+            $table->dropColumn(['code_verify_email', 'expired_verify_email']);
         });
     }
 };

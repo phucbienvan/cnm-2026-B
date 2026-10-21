@@ -3,27 +3,20 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SendMailRegister extends Mailable
+class VerifyEmailCode extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        public readonly string $code,
-        public readonly string $username
-    )
-    {
-        //
-    }
+    public function __construct(public string $code, public string $name) {}
 
     /**
      * Get the message envelope.
@@ -31,7 +24,7 @@ class SendMailRegister extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Send Mail Register',
+            subject: 'Verify your email address',
         );
     }
 
@@ -41,7 +34,7 @@ class SendMailRegister extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mails.send-mail-register',
+            view: 'emails.verify-email-code',
         );
     }
 
