@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Http\Requests\Product\CreateRequest;
 use App\Http\Resources\ProductResource;
 
@@ -40,6 +39,16 @@ class ProductController extends Controller
         return response()->json([
             'message' => 'get product successfully',
             'data' => new ProductResource($product)
+        ]);
+    }
+
+    public function update(CreateRequest $request, Product $product)
+    {
+        $product->update($request->validated());
+
+        return response()->json([
+            'message' => 'update product successfully',
+            'data' => new ProductResource($product->refresh())
         ]);
     }
 
