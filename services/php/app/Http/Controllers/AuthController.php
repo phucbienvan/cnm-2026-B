@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
+use App\Http\Requests\Auth\ResendCodeRequest;
 use App\Mail\SendMailRegister;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -120,5 +121,22 @@ class AuthController extends Controller
             'message' => 'get user successfully',
             'data' => $user
         ]);
+    }
+    
+    public function resendCode(ResendCodeRequest $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        $newCode = random_int(100000, 999999); 
+        
+        $user->code = Hash::make($newCode);
+        $user->expired_code = now()->addMinutes(10);
+        $user->save();
+
+        Mail::to($user->email)->queue(new SendMailRegister($newCode, $user->name));
+
+        return response()->json([
+            'message' => 'Mã xác nhận mới đã được gửi lại vào email của bạn.'
+        ], 200);
     }
 }
