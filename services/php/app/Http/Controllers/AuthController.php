@@ -12,6 +12,7 @@ use App\Mail\VerifyEmailCode;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -205,6 +206,15 @@ class AuthController extends Controller
             'data' => [
                 'access_token' => $accessToken,
             ],
+        ]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'logout successfully',
         ]);
     }
 
