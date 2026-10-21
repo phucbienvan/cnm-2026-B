@@ -2,123 +2,150 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\VerifyCodeRequest;
-use App\Mail\SendMailRegister;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\VerfiyMailRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Mail\VerfifyCodeRegister;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Requests\Auth\ResendMailRequest;
+
 
 class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
         $input = $request->validated();
+        $code = rand(100000, 999999);
+        $expired_at = now()->addMinutes(10);
 
-        $code = random_int(100000 , 999999);
-        $expiredCode = now()->addMinutes(10);
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
-            'code' => Hash::make($code),
-            'expired_code' => $expiredCode
+            'code_verify_email' => Hash::make($code),
+            'expired_verify_email' => $expired_at,
         ]);
 
-        //Send mail
-        Mail::to($user->email)->queue(new SendMailRegister($code,  $input['name']));
-
+        
+        Mail::to($user->email)->send(new SendMailRegister());
         return response()->json([
-            'message' => 'register successfully',
-            'data' => $user
+            'message' => 'User created successfully',
         ]);
     }
 
-    public function verifyCode(VerifyCodeRequest $request)
+    public function verifyMail(VerfiyMailRequest $request)
     {
         $input = $request->validated();
         $user = User::where('email', $input['email'])->first();
 
         if (!$user) {
             return response()->json([
-                'message' => 'user not found'
+                'message' => 'email not found',
             ], 404);
         }
 
-        if (!Hash::check($input['code'], $user->code)) {
+        if ($user->expired_verify_email < now()) {
             return response()->json([
-                'message' => 'code is incorrect'
-            ], 400);
+                'message' => 'code is expired',
+            ], 401);
         }
 
-        if ($user->expired_code < now()) {
+        if (!Hash::check($input['code'], $user->code_verify_email)) {
             return response()->json([
-                'message' => 'code is expired'
-            ], 400);
+                'message' => 'code is incorrect',
+            ], 401);
         }
 
         $user->update([
-            'code' => null,
-            'expired_code' => null,
             'email_verified_at' => now(),
+            'code_verify_email' => null,
+            'expired_verify_email' => null,
         ]);
 
         return response()->json([
             'message' => 'email verified successfully',
-            'data' => $user
         ]);
     }
-    
+
     public function login(LoginRequest $request)
     {
         $input = $request->validated();
-        $user = User::where('email' , $input['email'])->first();
+
+        $user = User::where('email', $input['email'])->first();
 
         if (!$user) {
             return response()->json([
-                'message' => 'email or password not match'
+                'message' => 'email or password incorrect',
             ], 401);
         }
 
         if (!$user->email_verified_at) {
             return response()->json([
-                'message' => 'email not verified'
+                'message' => 'email not verified',
             ], 401);
         }
 
         if (!Hash::check($input['password'], $user->password)) {
             return response()->json([
-                'message' => 'email or password not match'
+                'message' => 'email or password incorrect',
             ], 401);
         }
 
-        $accessToken = $user->createToken('authToken')->plainTextToken;
+        $accessToken = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'login successfully',
-            'data' => [
-                'access_token' => $accessToken
-            ]
+            'access_token' => $accessToken,
         ]);
     }
 
+    public function getUser(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json($user);
+    }
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
+        
         return response()->json([
-            'message' => 'logout successfully'
+            'message' => 'Logged out successfully',
         ]);
     }
 
-    public function getUser()
+    // xây dựng chức năng resend email
+    public function resendMail(ResendMailRequest $request)
     {
-        $user = auth('sanctum')->user();
+        $input = $request->validated();
+        $user = User::where('email', $input['email'])->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'email not found',
+            ], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'message' => 'email already verified',
+            ], 400);
+        }
+
+        $code = rand(100000, 999999);
+        $expired_at = now()->addMinutes(10);
+
+        $user->update([
+            'code_verify_email' => Hash::make($code),
+            'expired_verify_email' => $expired_at,
+        ]);
+
+        Mail::to($user->email)->queue(new VerfifyCodeRegister($code, $user->name));
+
         return response()->json([
-            'message' => 'get user successfully',
-            'data' => $user
+            'message' => 'Verification code resent successfully',
         ]);
     }
 }

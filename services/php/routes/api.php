@@ -1,27 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostController;
+use Illuminate\Support\Facades\Route;
 
-Route::post('register' , [AuthController::class , 'register']);
-Route::post('verify-code' , [AuthController::class , 'verifyCode']);
-Route::post('login' , [AuthController::class , 'login']);
-Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::get('users' , [AuthController::class , 'getUser'])->middleware('auth:sanctum');
-Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+// Các route xác thực không cần đăng nhập
+Route::post('register', [AuthController::class, 'register']);
+Route::post('verify-mail', [AuthController::class, 'verifyMail']);
+Route::post('login', [AuthController::class, 'login']);
+Route::post('resend-mail', [AuthController::class, 'resendMail']);
 
-Route::get('/products' , [ProductController::class , 'index']);
-Route::post('/products' , [ProductController::class , 'store']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('users', [AuthController::class, 'getUser']);
+    Route::post('logout', [AuthController::class, 'logout']);
+});
 
-Route::get('/products/{product}' , [ProductController::class , 'show'])->missing(function () {
+Route::get('/posts', [PostController::class, 'index']);
+Route::post('/posts', [PostController::class, 'store']);
+
+Route::get('/posts/{post}', [PostController::class, 'show'])->missing(function () {
     return response()->json([
-        'message' => 'product not found'
+        'message' => 'Không tìm thấy bài viết',
     ], 404);
 });
-Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->missing(function () {
+
+Route::delete('/posts/{post}', [PostController::class, 'destroy'])->missing(function () {
     return response()->json([
-        'message' => 'product not found'
+        'message' => 'Không tìm thấy bài viết',
     ], 404);
 });
-Route::put('/products/{product}', [ProductController::class, 'update']);
+
+Route::put('/posts/{post}', [PostController::class, 'update'])->missing(function () {
+    return response()->json([
+        'message' => 'Không tìm thấy bài viết',
+    ], 404);
+});

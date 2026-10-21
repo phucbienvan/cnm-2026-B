@@ -8,10 +8,11 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     public function index(User $user)
-    {
+    {        
         return response()->json([
+            'id' => $user->id,
             'name' => $user->name,
-            'email' => $user->email
+            'message' => 'Hello',
         ]);
     }
 }
