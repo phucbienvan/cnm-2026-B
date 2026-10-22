@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Mail\VerificationCodeMail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -42,5 +44,37 @@ class ExampleTest extends TestCase
     public function test_guest_cannot_logout(): void
     {
         $this->postJson('/api/logout')->assertUnauthorized();
+    }
+
+    public function test_user_can_resend_email_verification_code(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create(['email_verified_at' => null]);
+
+        $response = $this->postJson('/api/resend-verification-code', [
+            'email' => $user->email,
+        ]);
+
+        $response->assertOk()->assertJson([
+            'message' => 'verification code sent successfully',
+        ]);
+        $user->refresh();
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $user->email_verification_code);
+        $this->assertTrue($user->email_verification_code_expires_at->isFuture());
+        Mail::assertSent(VerificationCodeMail::class, function (VerificationCodeMail $mail) use ($user) {
+            return $mail->code === $user->email_verification_code;
+        });
+    }
+
+    public function test_verified_user_cannot_resend_email_verification_code(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->postJson('/api/resend-verification-code', [
+            'email' => $user->email,
+        ])->assertStatus(422);
+
+        Mail::assertNothingSent();
     }
 }
