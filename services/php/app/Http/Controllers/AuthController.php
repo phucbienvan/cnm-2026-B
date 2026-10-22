@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ResendVerificationCodeRequest;
+use App\Mail\VerificationCodeMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -50,6 +54,28 @@ class AuthController extends Controller
             'data' => [
                 'access_token' => $accessToken,
             ],
+        ]);
+    }
+
+    public function resendVerificationCode(ResendVerificationCodeRequest $request): JsonResponse
+    {
+        $email = $request->string('email')->lower()->toString();
+        $user = User::where('email', $email)->first();
+
+        if ($user && ! $user->email_verified_at) {
+            $code = (string) random_int(100000, 999999);
+
+            Cache::put(
+                'email-verification-code:'.sha1($email),
+                Hash::make($code),
+                now()->addMinutes(10),
+            );
+
+            Mail::to($email)->send(new VerificationCodeMail($code));
+        }
+
+        return response()->json([
+            'message' => 'verification code sent successfully',
         ]);
     }
 
