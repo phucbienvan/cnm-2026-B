@@ -51,4 +51,20 @@ class ProductController extends Controller
             'message' => 'delete product successfully'
         ]);
     }
+
+    public function update(CreateRequest $request, Product $product)
+    {
+        $input = $request->validated();
+
+        $product->update([
+            'name' => $input['name'],
+            'price' => $input['price'],
+            'description' => $input['description']
+        ]);
+
+        return response()->json([
+            'message' => 'update product successfully',
+            'data' => new ProductResource($product)
+        ]);
+    }
 }
