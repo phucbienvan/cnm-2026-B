@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ResendCodeRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Mail\SendMailRegister;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -68,6 +70,36 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'email verified successfully',
             'data' => $user
+        ]);
+    }
+
+    public function resendCode(ResendCodeRequest $request): JsonResponse
+    {
+        $user = User::firstWhere('email', $request->validated('email'));
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'user not found',
+            ], 404);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'email already verified',
+            ], 400);
+        }
+
+        $code = (string) random_int(100000, 999999);
+
+        $user->update([
+            'code' => Hash::make($code),
+            'expired_code' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($user->email)->queue(new SendMailRegister($code, $user->name));
+
+        return response()->json([
+            'message' => 'code resent successfully',
         ]);
     }
     
