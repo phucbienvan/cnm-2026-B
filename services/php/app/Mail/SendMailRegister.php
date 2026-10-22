@@ -19,7 +19,8 @@ class SendMailRegister extends Mailable
      */
     public function __construct(
         public readonly string $code,
-        public readonly string $username
+        public readonly string $username,
+        public readonly string $email
     )
     {
         //
