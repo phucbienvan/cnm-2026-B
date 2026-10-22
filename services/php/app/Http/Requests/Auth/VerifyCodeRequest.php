@@ -24,7 +24,7 @@ class VerifyCodeRequest extends FormRequest
     {
         return [
             'code' => 'required|integer|min:6',
-            'email' => 'required|email'
+            'email' => 'required|email',
         ];
     }
 }

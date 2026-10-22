@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -20,8 +19,7 @@ class SendMailRegister extends Mailable
     public function __construct(
         public readonly string $code,
         public readonly string $username
-    )
-    {
+    ) {
         //
     }
 
