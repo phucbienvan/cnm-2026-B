@@ -121,4 +121,40 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
+    public function resendCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'user not found'
+            ], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'message' => 'email already verified'
+            ], 400);
+        }
+
+        // Tạo mã ngẫu nhiên mới và gia hạn 10 phút
+        $code = random_int(100000, 999999);
+        $expiredCode = now()->addMinutes(10);
+
+        $user->update([
+            'code' => Hash::make($code),
+            'expired_code' => $expiredCode,
+        ]);
+
+        // Gửi mail xác thực mới
+        Mail::to($user->email)->queue(new SendMailRegister($code, $user->name));
+
+        return response()->json([
+            'message' => 'resend code successfully'
+        ]);
+    }
 }
