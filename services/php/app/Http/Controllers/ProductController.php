@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Http\Requests\Product\CreateRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::orderBy('id', 'desc')->paginate(10);
+        $products = Product::with('user')->orderBy('id', 'desc')->paginate(10);
 
         return response()->json([
             'message' => 'get list product successfully',
@@ -45,15 +45,6 @@ class ProductController extends Controller
         ]);
     }
 
-    public function destroy(Product $product)
-    {
-        $product->delete();
-
-        return response()->json([
-            'message' => 'delete product successfully'
-        ]);
-    }
-
     public function update(CreateRequest $request, Product $product)
     {
         $user = auth()->user();
@@ -61,7 +52,7 @@ class ProductController extends Controller
         if ($product->user_id !== $user->id) {
             return response()->json([
                 'message' => 'you are not authorized to update this product'
-            ], 401);
+            ], 403);
         }
 
         $input = $request->validated();
@@ -75,6 +66,23 @@ class ProductController extends Controller
         return response()->json([
             'message' => 'update product successfully',
             'data' => new ProductResource($product)
+        ]);
+    }
+
+    public function destroy(Product $product)
+    {
+        $user = auth()->user();
+
+        if ($product->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Product didnt created by you!'
+            ], 403);
+        }
+
+        $product->delete();
+
+        return response()->json([
+            'message' => 'delete product successfully'
         ]);
     }
 }
