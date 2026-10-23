@@ -22,11 +22,13 @@ class ProductController extends Controller
     public function store(CreateRequest $request)
     {
         $input = $request->validated();
+        $user = auth()->user();
 
         $product = Product::create([
             'name' => $input['name'],
             'price' => $input['price'],
-            'description' => $input['description']
+            'description' => $input['description'],
+            'user_id' => $user->id
         ]);
 
         return response()->json([
@@ -54,6 +56,14 @@ class ProductController extends Controller
 
     public function update(CreateRequest $request, Product $product)
     {
+        $user = auth()->user();
+
+        if ($product->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'you are not authorized to update this product'
+            ], 401);
+        }
+
         $input = $request->validated();
 
         $product->update([
