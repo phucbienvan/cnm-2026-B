@@ -121,4 +121,43 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
+
+    public function resendVerifyEmail(Request $request)
+    {
+    $validated = $request->validate([
+        'email' => ['required', 'email'],
+    ]);
+
+    $user = User::where('email', $validated['email'])->first();
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'Email chưa được đăng ký.',
+        ], 404);
+    }
+
+    if ($user->email_verified_at !== null) {
+        return response()->json([
+            'message' => 'Email này đã được xác minh.',
+        ], 409);
+    }
+
+    // Tạo mã xác minh mới gồm 6 chữ số
+    $code = (string) random_int(100000, 999999);
+
+    // Cập nhật mã và thời hạn sử dụng mới
+    $user->update([
+        'code' => Hash::make($code),
+        'expired_code' => now()->addMinutes(10),
+    ]);
+
+    // Gửi lại email bằng mẫu email đăng ký hiện có
+    Mail::to($user->email)->queue(
+        new SendMailRegister($code, $user->name)
+    );
+
+    return response()->json([
+        'message' => 'Đã gửi lại mã xác minh. Vui lòng kiểm tra email.',
+    ]);
+    }
 }
