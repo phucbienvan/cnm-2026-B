@@ -121,4 +121,32 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
+    public function resendCode(Request $request)
+    {
+        $input = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $user = User::where('email', $input['email'])->first();
+
+        if (!$user || $user->email_verified_at !== null) {
+            return response()->json([
+                'message' => 'tai khoan xac thuc moi duoc gui ve',
+            ]);
+        }
+
+        $code = (string) random_int(100000, 999999);
+
+        $user->code = Hash::make($code);
+        $user->expired_code = now()->addMinutes(10);
+        $user->save();
+
+        Mail::to($user->email)->queue(
+            new SendMailRegister($code, $user->name)
+        );
+
+        return response()->json([
+            'message' => 'neu tai khoan can xac than ma moi se duoc gui',
+        ]);
+    }
 }
