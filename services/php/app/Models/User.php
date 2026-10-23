@@ -31,4 +31,9 @@ class User extends Authenticatable
             'expired_code' => 'datetime',
         ];
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

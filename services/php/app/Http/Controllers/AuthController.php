@@ -105,7 +105,7 @@ class AuthController extends Controller
         ]);
     }
 
-      public function resendCode(ResendCodeRequest $request)
+    public function resendCode(ResendCodeRequest $request)
     {
         $user = User::where('email', $request->validated('email'))->first();
 
@@ -115,11 +115,11 @@ class AuthController extends Controller
             ], 404);
         }
 
-        if ($user->email_verified_at) {
-            return response()->json([
-                'message' => 'email already verified'
-            ], 400);
-        }
+        // if ($user->email_verified_at) {
+        //     return response()->json([
+        //         'message' => 'email already verified'
+        //     ], 400);
+        // }
 
         $user->update([
             'code' => null,
