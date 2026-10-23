@@ -70,7 +70,51 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
-    
+
+    public function resendCode(ResendCodeRequest $request)
+    {
+        $input = $request->validated();
+        $user = User::where('email', $input['email'])->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'user not found'
+            ], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'message' => 'email already verified'
+            ], 400);
+        }
+
+        // Chống spam: Giới hạn tần suất gửi lại mã (cooldown 60 giây)
+        $rateLimitKey = 'resend-code:' . $user->id;
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 1)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+            return response()->json([
+                'message' => "Please wait {$seconds} seconds before requesting a new code",
+                'retry_after' => $seconds
+            ], 429);
+        }
+        RateLimiter::hit($rateLimitKey, 60);
+
+        $code = random_int(100000, 999999);
+        $expiredCode = now()->addMinutes(10);
+
+        $user->update([
+            'code' => Hash::make($code),
+            'expired_code' => $expiredCode,
+        ]);
+
+        // Gửi email chứa mã xác thực mới vào hàng đợi
+        Mail::to($user->email)->queue(new SendMailRegister((string) $code, $user->name));
+
+        return response()->json([
+            'message' => 'verification code resent successfully'
+        ]);
+    }
+
     public function login(LoginRequest $request)
     {
         $input = $request->validated();
@@ -106,7 +150,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user() ?? auth('sanctum')->user();
+
+        if ($user && $user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
 
         return response()->json([
             'message' => 'logout successfully'
