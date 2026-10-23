@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\ResendMailRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Mail\SendMailRegister;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -68,6 +70,26 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'email verified successfully',
             'data' => $user
+        ]);
+    }
+
+    public function resendMail(ResendMailRequest $request): JsonResponse
+    {
+        $user = User::where('email', $request->validated('email'))->first();
+
+        if ($user && !$user->email_verified_at) {
+            $code = (string) random_int(100000, 999999);
+
+            $user->update([
+                'code' => Hash::make($code),
+                'expired_code' => now()->addMinutes(10),
+            ]);
+
+            Mail::to($user->email)->queue(new SendMailRegister($code, $user->name));
+        }
+
+        return response()->json([
+            'message' => 'If the account exists and is not verified, a new verification email has been sent.',
         ]);
     }
     
