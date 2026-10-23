@@ -47,6 +47,14 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $user = auth()->user();
+
+        if (!$product->isOwnedBy($user)) {
+            return response()->json([
+                'message' => 'you are not authorized to delete this product'
+            ], 403);
+        }
+
         $product->delete();
 
         return response()->json([
@@ -58,10 +66,10 @@ class ProductController extends Controller
     {
         $user = auth()->user();
 
-        if ($product->user_id !== $user->id) {
+        if (!$product->isOwnedBy($user)) {
             return response()->json([
                 'message' => 'you are not authorized to update this product'
-            ], 401);
+            ], 403);
         }
 
         $input = $request->validated();

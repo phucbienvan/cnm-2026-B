@@ -15,4 +15,17 @@ class Product extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Check if product belongs to the given user.
+     *
+     * @param \App\Models\User|int|string $user
+     * @return bool
+     */
+    public function isOwnedBy($user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return (int) $this->user_id === (int) $userId;
+    }
 }
