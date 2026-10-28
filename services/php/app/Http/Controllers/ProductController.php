@@ -45,8 +45,14 @@ class ProductController extends Controller
         ]);
     }
 
-    public function destroy(Product $product)
+    public function destroy(Request $request, Product $product)
     {
+        if ($request->user()->id !== $product->user_id) {
+            return response()->json([
+                'message' => 'only the owner can delete this product'
+            ], 403);
+        }
+
         $product->delete();
 
         return response()->json([
