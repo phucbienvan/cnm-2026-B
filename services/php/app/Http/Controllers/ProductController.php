@@ -48,6 +48,12 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $user = auth()->user();
+        if ($product->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'you are not authorized to delete this product',
+            ], 401);
+        }
         $product->delete();
 
         return response()->json([
