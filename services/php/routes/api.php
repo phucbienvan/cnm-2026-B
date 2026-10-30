@@ -12,19 +12,18 @@ Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanct
 Route::get('users' , [AuthController::class , 'getUser'])->middleware('auth:sanctum');
 
 
-Route::get('/products' , [ProductController::class , 'index']);
-
-Route::put('/products/{product}', [ProductController::class, 'update'])->middleware('auth:sanctum');
-
-Route::post('/products' , [ProductController::class , 'store'])->middleware('auth:sanctum');
-
-Route::get('/products/{product}' , [ProductController::class , 'show'])->missing(function () {
-    return response()->json([
-        'message' => 'product not found'
-    ], 404);
-});
-Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->missing(function () {
-    return response()->json([
-        'message' => 'product not found'
-    ], 404);
+Route::prefix('products')->controller(ProductController::class)->group(function () {
+    Route::get('/', 'index');
+    Route::post('/', 'store')->middleware('auth:sanctum');
+    Route::get('/{product}', 'show')->missing(function () {
+        return response()->json([
+            'message' => 'product not found',
+        ], 404);
+    });
+    Route::put('/{product}', 'update')->middleware('auth:sanctum');
+    Route::delete('/{product}', 'destroy')->missing(function () {
+        return response()->json([
+            'message' => 'product not found',
+        ], 404);
+    });
 });
