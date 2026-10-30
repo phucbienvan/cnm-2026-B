@@ -23,16 +23,15 @@ class ResendCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email|exists:users,email'
         ];
     }
-
     public function messages(): array
     {
         return [
             'email.required' => 'Email không được để trống',
-            'email.email'    => 'Email không đúng định dạng',
-            'email.exists'   => 'Email này chưa được đăng ký trong hệ thống',
+            'email.email' => 'Email không đúng định dạng',
+            'email.exists' => 'Email này chưa được đăng ký trong hệ thống',
         ];
     }
 }
