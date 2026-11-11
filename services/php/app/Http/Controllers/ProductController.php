@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Http\Requests\Product\CreateRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Product;
 
 class ProductController extends Controller
 {
@@ -15,7 +14,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'get list product successfully',
-            'data' => ProductResource::collection($products)
+            'data' => ProductResource::collection($products),
         ]);
     }
 
@@ -28,12 +27,12 @@ class ProductController extends Controller
             'name' => $input['name'],
             'price' => $input['price'],
             'description' => $input['description'],
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         return response()->json([
             'message' => 'create product successfully',
-            'data' => new ProductResource($product)
+            'data' => new ProductResource($product),
         ]);
     }
 
@@ -41,16 +40,24 @@ class ProductController extends Controller
     {
         return response()->json([
             'message' => 'get product successfully',
-            'data' => new ProductResource($product)
+            'data' => new ProductResource($product),
         ]);
     }
 
     public function destroy(Product $product)
     {
+        $user = auth()->user();
+
+        if ($product->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'you are not authorized to delete this product',
+            ], 401);
+        }
+
         $product->delete();
 
         return response()->json([
-            'message' => 'delete product successfully'
+            'message' => 'delete product successfully',
         ]);
     }
 
@@ -60,7 +67,7 @@ class ProductController extends Controller
 
         if ($product->user_id !== $user->id) {
             return response()->json([
-                'message' => 'you are not authorized to update this product'
+                'message' => 'you are not authorized to update this product',
             ], 401);
         }
 
@@ -69,12 +76,12 @@ class ProductController extends Controller
         $product->update([
             'name' => $input['name'],
             'price' => $input['price'],
-            'description' => $input['description']
+            'description' => $input['description'],
         ]);
 
         return response()->json([
             'message' => 'update product successfully',
-            'data' => new ProductResource($product)
+            'data' => new ProductResource($product),
         ]);
     }
 }
