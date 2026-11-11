@@ -10,6 +10,7 @@ Route::post('resend-code', [AuthController::class, 'resendCode'])->middleware('t
 Route::post('login' , [AuthController::class , 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('users' , [AuthController::class , 'getUser'])->middleware('auth:sanctum');
+Route::post('logout' , [AuthController::class , 'logout'])->middleware('auth:sanctum');
 
 
 Route::get('/products' , [ProductController::class , 'index']);
