@@ -5,8 +5,6 @@ namespace App\Service;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Permission;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
 
 class UserService {
     public function __construct(
