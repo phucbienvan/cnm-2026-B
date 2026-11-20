@@ -8,139 +8,139 @@ use App\Models\Permission;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 
-class userService {
-    public function __construct(User $user,
-        Category $category, Permission $permission) {
+class UserService {
+    public function __construct(
+        User $user,
+        Category $category, 
+        Permission $permission
+    ){
         $this->user = $user;
         $this->category = $category;
         $this->permission = $permission;
     }
-    public function create_user($param)
+
+    public function createUser($params)
     {
-        $UserData = [
-            'name' => $param['name'],
-            'email' => $param['email']
+        $userData = [
+            'name' => $params['name'],
+            'email' => $params['email']
         ];
 
-        if(isset($param['password'] && $param['password'])){
-            $UserData['password'] = $param['password']
+        if(isset($params['password'])){
+            $userData['password'] = $params['password'];
         }
-        if (isset($param['status'])) {
-            if ($param['status']) {
-                $UserData['status'] = true;
-            } else {
-                $UserData['status'] = true;
-            }
-        } else {
-            $UserData['status'] = false;
-        }
-        if ($param['category_id']) {
-            $UserData['category_id'] = $param['category_id'];
-        }
-        $NewUser = $this->user->create($UserData);
 
-        if (isset($param['permission_ids'])) {
-            foreach ($param['permission_ids'] as $PermissionId) {
-                $NewUser->permissions()->attach($PermissionId);
+        $status = isset($param['status']) ?? false;
+        $newUser = $this->user->create($userData);
+
+        if (isset($params['permission_ids'])) {
+            foreach ($params['permission_ids'] as $permissionId) {
+                $newUser->permissions()->attach($permissionId);
             }
         }
-        return $NewUser;
+
+        return $newUser;
     }
 
-    public function update_user($id, $param){
+    public function updateUser($id, $params)
+    {
         $user = $this->user->find($id);
 
-        if ($user) {
-            if (isset($param['name'])) {
-                $user->name = $param['name'];
-            }
-            if (isset($param['email'])) {
-                $user->email = $param['email'];
-            }
-            if (isset($param['password'])) {
-                //update password
-                $user->password = $param['password'];
-            } else {
-                $user->password = null;
-            }
-            if (!empty($param['status'])) {
-                $user->status = $param['status'];
-            }
-            if (!empty($param['category_id'])) {
-                $user->category_id = $param['category_id'];
-            }
-
-            $user->save();
-
-            if (!empty($param['permission_ids'])) {
-                foreach ($param['permission_ids'] as $permissionId) {
-                    $user->permissions()->attach($permissionId);
-                }
-            } else {
-                $user->permissions()->detach();
-            }
-
-            return true;
-        } else {
+        if (!$user) {
             return false;
         }
+
+        if (isset($params['name'])) {
+            $user->name = $params['name'];
+        }
+
+        if (isset($params['email'])) {
+            $user->email = $params['email'];
+        }
+
+        if (isset($params['password'])) {
+            $user->password = $params['password'];
+        } else {
+            $user->password = null;
+        }
+
+        if (!empty($params['status'])) {
+            $user->status = $params['status'];
+        }
+
+        if (!empty($params['category_id'])) {
+            $user->category_id = $params['category_id'];
+        }
+
+        $user->save();
+
+        if (!empty($param['permission_ids'])) {
+            foreach ($param['permission_ids'] as $permissionId) {
+                $user->permissions()->attach($permissionId);
+            }
+        } else {
+            $user->permissions()->detach();
+        }
+
+        return true;
     }
 
-    public function search($param){
-        $UserSearch = $this->user;
-        if ($param['keyword']) {
-            $UserSearch->where(
-                'name',
-                "like",
-                "%$param['keyword']"
-            );
+    public function search($params)
+    {
+        $userSearch = $this->user;
 
-            $UserSearch->orWhere(
-                'email',
-                'like',
-                '%' . $param['keyword'] . '%'
-            );
+        if ($params['keyword']) {
+            $userSearch->where('name', 'like', '%' . $params['keyword'] . '%');
+
+            $userSearch->orWhere('email', 'like', '%' . $params['keyword'] . '%');
         }
 
         if (!empty($param['category_id'])) {
-            $UserSearch->where('category_id', $param['category_id']);
+            $userSearch->where('category_id', $params['category_id']);
         }
-        if (!empty($param['status'])) {
-            $UserSearch->where('status', $param['status']);
+
+        if (!empty($params['status'])) {
+            $userSearch->where('status', $params['status']);
         }
+
         if (isset($param['has_schedule'])) {
-            $UserSearch->whereHas('schedule');
+            $userSearch->whereHas('schedule');
         }
 
-        $PerPage = isset($param['per_page']) ? $param['per_page'] : 1000;
-        return $UserSearch->with("role",'group')->where('status', true)
+        $perPage = isset($param['per_page']) ? $params['per_page'] : 1000;
+
+        return $userSearch->with("role",'group')->where('status', true)
             ->orderBy('id', 'asc')
-            ->paginate($PerPage);
+            ->paginate($perPage);
     }
-    public function change_status($id, $status)
+
+    public function changeStatus($id, $status)
     {
-        $User = $this->user->find($id);
+        $user = $this->user->find($id);
 
-        if ($User != null) {
-            if ($status = true) {
-                $User->status = 1;
-            } else {
-                $User->status = 0;
-            }
-
-            $User->save();
-            return "success";
+        if ($user == null) {
+            return null;
         }
-        return null;
+
+        if ($status == true) {
+            $user->status = 1;
+        } else {
+            $user->status = 0;
+        }
+
+        $user->save();
+
+        return 'success';
     }
 
-    public function get_permissions($userId){
+    public function getPermissions($userId){
         $user = $this->user->find($userId);
         $result = [];
         foreach ($user->permissions as $permission) {
-            $PermissionData = $this->permission->find($permission->id);
-            $result[] = $PermissionData;
+            $permissionData = $this->permission->find($permission->id);
+            $result[] = $permissionData;
         }
+
         return $result;
     }
 }
