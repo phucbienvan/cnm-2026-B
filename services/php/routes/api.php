@@ -4,27 +4,35 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 
-Route::post('register' , [AuthController::class , 'register']);
-Route::post('verify-code' , [AuthController::class , 'verifyCode']);
-Route::post('resend-code', [AuthController::class, 'resendCode'])->middleware('throttle:1,0.25');
-Route::post('login' , [AuthController::class , 'login']);
-Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::get('users' , [AuthController::class , 'getUser'])->middleware('auth:sanctum');
-
-
-Route::get('/products' , [ProductController::class , 'index']);
-
-Route::put('/products/{product}', [ProductController::class, 'update'])->middleware('auth:sanctum');
-
-Route::post('/products' , [ProductController::class , 'store'])->middleware('auth:sanctum');
-
-Route::get('/products/{product}' , [ProductController::class , 'show'])->missing(function () {
-    return response()->json([
-        'message' => 'product not found'
-    ], 404);
+// Auth: không cần đăng nhập
+Route::controller(AuthController::class)->group(function () {
+    Route::post('register', 'register');
+    Route::post('verify-code', 'verifyCode');
+    Route::post('resend-code', 'resendCode')->middleware('throttle:1,0.25');
+    Route::post('login', 'login');
 });
-Route::delete('/products/{product}' , [ProductController::class , 'destroy'])->missing(function () {
+
+// Auth: cần đăng nhập
+Route::middleware('auth:sanctum')->controller(AuthController::class)->group(function () {
+    Route::post('logout', 'logout');
+    Route::get('users', 'getUser');
+});
+
+$productNotFound = function () {
     return response()->json([
         'message' => 'product not found'
     ], 404);
+};
+
+Route::prefix('products')->controller(ProductController::class)->group(function () use ($productNotFound) {
+    // Công khai
+    Route::get('/', 'index');
+    Route::get('/{product}', 'show')->missing($productNotFound);
+
+    // Cần đăng nhập
+    Route::middleware('auth:sanctum')->group(function () use ($productNotFound) {
+        Route::post('/', 'store');
+        Route::put('/{product}', 'update');
+        Route::delete('/{product}', 'destroy')->missing($productNotFound);
+    });
 });
