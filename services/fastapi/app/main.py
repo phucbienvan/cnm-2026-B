@@ -1,8 +1,9 @@
 from fastapi import FastAPI
-
+from app.routes.health import router as health_router
+from app.routes.users import router as users_router
 app = FastAPI(title="CNM FastAPI")
 
-
+app = FastAPI(title="CNM FastAPI")
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
